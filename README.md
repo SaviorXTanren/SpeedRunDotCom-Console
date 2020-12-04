@@ -4,16 +4,21 @@ C# console application that queries information from speedrun.com service. The a
 ## Command Line Arguments
 ### All Required:
   -g GAME NAME, --Game=GAME NAME                    Required.
+
   -c ANY%/100%/etc.., --Category=ANY%/100%/etc..    Required. The specific category for the game
 
 ### Either Required:
   -w, --WorldRecord                                 Whether to show the world record time or not
+
   -u USERNAME, --Username=USERNAME                  Username to look up record for
 
 ### Optional:
   -p PC/PS4/etc.., --Platform=PC/PS4/etc..          The specific platform for the game
+
   --f1 FILTERNAME & --v1 FILTERVALUE                The 1st name & value of a variable to filter on
+
   --f2 FILTERNAME & --v2 FILTERVALUE                The 2nd name & value of a variable to filter on
+
   --f3 FILTERNAME & --v3 FILTERVALUE                The 3rd name & value of a variable to filter on
 
 ### Output
@@ -21,6 +26,7 @@ C# console application that queries information from speedrun.com service. The a
 
 ### Miscellanous
   --help                                            Display this help screen.
+
   --version                                         Display version information.
 
 ## Samples
