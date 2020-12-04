@@ -1,33 +1,26 @@
 # SpeedRunDotCom-Console
 C# console application that queries information from speedrun.com service. The application uses the library [SpeedrunComSharp](https://github.com/LiveSplit/SpeedrunComSharp) and must be downloaded separately to build.
 
-## Usage
+## Command Line Arguments
+### All Required:
   -g GAME NAME, --Game=GAME NAME                    Required.
-
   -c ANY%/100%/etc.., --Category=ANY%/100%/etc..    Required. The specific category for the game
 
+### Either Required:
   -w, --WorldRecord                                 Whether to show the world record time or not
-
   -u USERNAME, --Username=USERNAME                  Username to look up record for
 
+### Optional:
+  -p PC/PS4/etc.., --Platform=PC/PS4/etc..          The specific platform for the game
+  --f1 FILTERNAME & --v1 FILTERVALUE                The 1st name & value of a variable to filter on
+  --f2 FILTERNAME & --v2 FILTERVALUE                The 2nd name & value of a variable to filter on
+  --f3 FILTERNAME & --v3 FILTERVALUE                The 3rd name & value of a variable to filter on
+
+### Output
   -o, --OutputToFile                                Output results to "output.txt" file in executing location
 
-  -p PC/PS4/etc.., --Platform=PC/PS4/etc..          The specific platform for the game
-
-  --f1                                              The 1st name of a variable to filter on
-
-  --v1                                              The 1st value of a variable to filter on
-
-  --f2                                              The 2nd name of a variable to filter on
-
-  --v2                                              The 2nd value of a variable to filter on
-
-  --f3                                              The 3rd name of a variable to filter on
-
-  --v3                                              The 3rd value of a variable to filter on
-
+### Miscellanous
   --help                                            Display this help screen.
-
   --version                                         Display version information.
 
 ## Samples
