@@ -25,7 +25,7 @@ Argument | Description
 > Any% NMS PB: 04:34:58 - SaviorXTanren
 
 -g CrossCode -u Symphonian46
-> Any% PB: 00:08:16.4400000 - Symphonian46; Time Attack PB: 00:00:07.9900000 - Symphonian46; Any% NMG PB: 00:14:05 - Symphonian46; Any% NMS PB: 02:04:43 - Symphonian46; All Dungeons PB: 01:04:00 - Symphonian46; Level 99 PB: 00:07:00 - Symphonian46; Rush Mode PB: 00:01:20.1700000 - Symphonian46
+> Any% PB: 00:08:16.4400000 - Symphonian46 ** Time Attack PB: 00:00:07.9900000 - Symphonian46 ** Any% NMG PB: 00:14:05 - Symphonian46 ** Any% NMS PB: 02:04:43 - Symphonian46 ** All Dungeons PB: 01:04:00 - Symphonian46 ** Level 99 PB: 00:07:00 - Symphonian46 ** Rush Mode PB: 00:01:20.1700000 - Symphonian46
 
 -g CrossCode -c Any% NMS -w
 > WR: 02:04:43 - Symphonian46
