@@ -5,8 +5,8 @@ C# console application that queries information from speedrun.com service. The a
 Argument | Description
 -------- | -------------
 -g GAME NAME, --Game=GAME NAME | Required. The name of the game.
--c ANY%/100%/etc.., --Category=ANY%/100%/etc.. | Required. The specific category for the game.
--w, --WorldRecord | Whether to show the world record time or not. The -w or -u arguments is required.
+-c ANY%/100%/etc.., --Category=ANY%/100%/etc.. | The specific category for the game.
+-w, --WorldRecord | Whether to show the world record time or not. Defaults to enabled if username not set.
 -u USERNAME, --Username=USERNAME | Username to look up record for. The -w or -u arguments is required.
 -p PC/PS4/etc.., --Platform=PC/PS4/etc.. | The specific platform for the game.
 --f1 FILTERNAME & --v1 FILTERVALUE | The 1st name & value of a variable to filter on.
@@ -17,6 +17,15 @@ Argument | Description
 --version | Display version information.
 
 ## Samples
+
+-g CrossCode
+> Any% WR: 00:08:16.1000000 - MonStahLer
+
+-g CrossCode -u SaviorXTanren
+> Any% NMS PB: 04:34:58 - SaviorXTanren
+
+-g CrossCode -u Symphonian46
+> Any% PB: 00:08:16.4400000 - Symphonian46 ** Time Attack PB: 00:00:07.9900000 - Symphonian46 ** Any% NMG PB: 00:14:05 - Symphonian46 ** Any% NMS PB: 02:04:43 - Symphonian46 ** All Dungeons PB: 01:04:00 - Symphonian46 ** Level 99 PB: 00:07:00 - Symphonian46 ** Rush Mode PB: 00:01:20.1700000 - Symphonian46
 
 -g CrossCode -c Any% NMS -w
 > WR: 02:04:43 - Symphonian46
