@@ -110,21 +110,17 @@ namespace SpeedRunDotCom_Console
             if (worldRecord == null && options.WorldRecord)
             {
                 worldRecord = runs.OrderBy(r => r.Times.Primary).FirstOrDefault();
-                if (worldRecord == null)
-                {
-                    output.Append("World Record not found");
-                    return;
-                }
             }
 
             if (!string.IsNullOrEmpty(options.Username))
             {
                 personalBest = runs.Where(r => string.Equals(r.Player.Name, options.Username, StringComparison.CurrentCultureIgnoreCase)).OrderBy(r => r.Times.Primary).FirstOrDefault();
-                if (personalBest == null)
-                {
-                    output.Append("Username not found");
-                    return;
-                }
+            }
+
+            if (worldRecord == null && personalBest == null)
+            {
+                output.Append("Could not find any times for the search criteria");
+                return;
             }
 
             PrintRuns(options, worldRecord, personalBest);
