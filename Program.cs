@@ -5,14 +5,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace SpeedRunDotCom_Console
 {
     public class Program
     {
         private static SpeedrunComClient client = new SpeedrunComClient();
-        private static StringBuilder output = new StringBuilder();
+        private static List<string> messages = new List<string>();
 
         public static void Main(string[] args)
         {
@@ -27,7 +26,7 @@ namespace SpeedRunDotCom_Console
                     Run(splits);
 
                     Console.WriteLine();
-                    output = new StringBuilder();
+                    messages.Clear();
                 }
             }
             else
@@ -40,124 +39,152 @@ namespace SpeedRunDotCom_Console
         {
             Parser.Default.ParseArguments<CommandLineArguments>(args).WithParsed<CommandLineArguments>(options =>
             {
-                Game game = client.Games.SearchGame(name: options.GameName);
-                if (game != null)
+                if (!options.UsernameSet)
                 {
-                    Category category = game.Categories.FirstOrDefault(c => string.Equals(c.Name, options.Category, StringComparison.CurrentCultureIgnoreCase));
-                    if (category != null)
+                    options.WorldRecord = true;
+                }
+
+                Game game = client.Games.SearchGame(name: options.GameName);
+                if (game != null && game.Categories.Count > 0)
+                {
+                    Dictionary<Category, List<Run>> categories = new Dictionary<Category, List<Run>>();
+                    if (options.CategorySet)
                     {
-                        PrintCategory(options, game, category);
+                        Category category = game.Categories.FirstOrDefault(c => string.Equals(c.Name, options.Category, StringComparison.CurrentCultureIgnoreCase));
+                        if (category != null)
+                        {
+                            categories[category] = new List<Run>(category.Runs);
+                        }
+                        else
+                        {
+                            messages.Add("Category not found");
+                        }
                     }
                     else
                     {
-                        output.Append("Category not found");
+                        if (options.UsernameSet)
+                        {
+                            categories = game.Categories.ToDictionary(c => c, c => c.Runs.ToList());
+                        }
+                        else if (game.FullGameCategories.Count() > 0)
+                        {
+                            categories[game.FullGameCategories.First()] = new List<Run>(game.FullGameCategories.First().Runs);
+                        }
+                        else
+                        {
+                            categories[game.Categories.First()] = new List<Run>(game.Categories.First().Runs);
+                        }
+                    }
+
+                    foreach (var kvp in categories)
+                    {
+                        List<Run> runs = new List<Run>(kvp.Value);
+                        Run worldRecord = null;
+                        Run personalBest = null;
+
+                        if (options.WorldRecord)
+                        {
+                            worldRecord = kvp.Key.WorldRecord;
+                        }
+
+                        if (options.PlatformSet || options.Filters.Count > 0)
+                        {
+                            runs.RemoveAll(r => r.Status.Type != RunStatusType.Verified);
+
+                            if (!string.IsNullOrEmpty(options.Platform))
+                            {
+                                runs.RemoveAll(r => !string.Equals(r.Platform.Name, options.Platform, StringComparison.CurrentCultureIgnoreCase));
+                            }
+
+                            if (options.Filters.Count != 0)
+                            {
+                                foreach (var filter in options.Filters)
+                                {
+                                    runs.RemoveAll(r => !r.VariableValues.Any(vv => string.Equals(vv.Name, filter.Key, StringComparison.CurrentCultureIgnoreCase) && string.Equals(vv.Value, filter.Value, StringComparison.CurrentCultureIgnoreCase)));
+                                }
+                            }
+
+                            if (options.WorldRecord)
+                            {
+                                worldRecord = runs.OrderBy(r => r.Times.Primary).FirstOrDefault();
+                            }
+                        }
+
+                        if (runs.Count == 0)
+                        {
+                            messages.Add("No runs found meeting the specified criteria");
+                            return;
+                        }
+
+                        if (!string.IsNullOrEmpty(options.Username))
+                        {
+                            personalBest = runs.Where(r => string.Equals(r.Player.Name, options.Username, StringComparison.CurrentCultureIgnoreCase)).OrderBy(r => r.Times.Primary).FirstOrDefault();
+                        }
+
+                        AddRun(options, kvp.Key, worldRecord, personalBest);
+                    }
+
+                    if (messages.Count == 0)
+                    {
+                        messages.Add("Could not find any times for the search criteria");
                     }
                 }
                 else
                 {
-                    output.Append("Game not found");
+                    messages.Add("Game not found");
                 }
 
-                Console.WriteLine(output.ToString());
+                Console.WriteLine(string.Join(" ** ", messages));
                 if (options.OutputToFile)
                 {
-                    File.WriteAllText("output.txt", output.ToString());
+                    File.WriteAllText("output.txt", string.Join("; ", messages));
                 }
             });
         }
 
-        private static void PrintCategory(CommandLineArguments options, Game game, Category category)
+        private static void AddRun(CommandLineArguments options, Category category, Run worldRecord, Run personalBest)
         {
-            List<Run> runs = new List<Run>(category.Runs);
-            Run worldRecord = null;
-            Run personalBest = null;
-            if (string.IsNullOrEmpty(options.Platform) && options.Filters.Count == 0)
+            if (worldRecord != null || personalBest != null)
             {
-                if (options.WorldRecord)
+                string run = string.Empty;
+                if (!options.CategorySet)
                 {
-                    worldRecord = category.WorldRecord;
-                    if (worldRecord == null)
+                    run += $"{category.Name} ";
+                }
+
+                if (worldRecord == personalBest)
+                {
+                    run += GetRunTime(options, "WR & PB", worldRecord);
+                }
+                else
+                {
+                    if (worldRecord != null)
                     {
-                        output.Append("World Record not found");
-                        return;
+                        run += GetRunTime(options, "WR", worldRecord, includePlayerNames: true);
+                    }
+
+                    if (worldRecord != null && personalBest != null)
+                    {
+                        run += ", ";
+                    }
+
+                    if (personalBest != null)
+                    {
+                        run += GetRunTime(options, "PB", personalBest);
                     }
                 }
-            }
-            else
-            {
-                runs.RemoveAll(r => r.Status.Type != RunStatusType.Verified);
-
-                if (!string.IsNullOrEmpty(options.Platform))
-                {
-                    runs.RemoveAll(r => !string.Equals(r.Platform.Name, options.Platform, StringComparison.CurrentCultureIgnoreCase));
-                }
-
-                if (options.Filters.Count != 0)
-                {
-                    foreach (var filter in options.Filters)
-                    {
-                        runs.RemoveAll(r => !r.VariableValues.Any(vv => string.Equals(vv.Name, filter.Key, StringComparison.CurrentCultureIgnoreCase) && string.Equals(vv.Value, filter.Value, StringComparison.CurrentCultureIgnoreCase)));
-                    }
-                }
-            }
-
-            if (runs.Count == 0)
-            {
-                output.Append("No runs found meeting the specified criteria");
-                return;
-            }
-
-            if (worldRecord == null && options.WorldRecord)
-            {
-                worldRecord = runs.OrderBy(r => r.Times.Primary).FirstOrDefault();
-            }
-
-            if (!string.IsNullOrEmpty(options.Username))
-            {
-                personalBest = runs.Where(r => string.Equals(r.Player.Name, options.Username, StringComparison.CurrentCultureIgnoreCase)).OrderBy(r => r.Times.Primary).FirstOrDefault();
-            }
-
-            if (worldRecord == null && personalBest == null)
-            {
-                output.Append("Could not find any times for the search criteria");
-                return;
-            }
-
-            PrintRuns(options, worldRecord, personalBest);
-        }
-
-        private static void PrintRuns(CommandLineArguments options, Run worldRecord, Run personalBest)
-        {
-            if (worldRecord == personalBest)
-            {
-                PrintRunTime(options, "WR & PB", worldRecord);
-            }
-            else
-            {
-                if (worldRecord != null)
-                {
-                    PrintRunTime(options, "WR", worldRecord, includePlayerNames: true);
-                }
-
-                if (worldRecord != null && personalBest != null)
-                {
-                    output.Append(", ");
-                }
-
-                if (personalBest != null)
-                {
-                    PrintRunTime(options, "PB", personalBest);
-                }
+                messages.Add(run);
             }
         }
 
-        private static void PrintRunTime(CommandLineArguments options, string header, Run run, bool includePlayerNames = true)
+        private static string GetRunTime(CommandLineArguments options, string header, Run run, bool includePlayerNames = true)
         {
-            output.Append($"{header}: {run.Times.Primary}");
+            string text = $"{header}: {run.Times.Primary}";
             if (includePlayerNames)
             {
-                output.Append($" - {run.Player.Name}");
+                text += $" - {run.Player.Name}";
             }
+            return text;
         }
     }
 }
